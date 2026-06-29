@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Springboard Talent — Candidate Assessment</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#0D2B1F;--green-mid:#1D9E75;--green-light:#E1F5EE;--green-text:#085041;
+  --gold:#C9A84C;--gold-light:#FAF3E0;--cream:#F5F0E8;
+  --red:#FCEBEB;--red-text:#791F1F;
+  --amber:#FAEEDA;--amber-text:#633806;
+  --ink:#1a1a1a;--ink2:#444;--ink3:#777;--ink4:#aaa;
+  --border:#e4e0d8;--surface:#fafaf8;--white:#fff;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,0.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2EFE8;min-height:100vh;color:var(--ink);-webkit-font-smoothing:antialiased}
+.page{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+
+/* HEADER */
+.app-header{background:var(--green);border-radius:var(--radius);padding:20px 24px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.app-header .brand{font-size:11px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase}
+.app-header .title{font-size:16px;color:var(--cream);font-weight:500;margin-top:4px}
+.timer-block{text-align:right}
+.timer-lbl{font-size:10px;color:#9ab8a8}
+.timer-val{font-size:20px;color:var(--cream);font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:.05em}
+.timer-val.warn{color:#f5a623}
+.timer-val.danger{color:#e24b4a}
+
+/* PROGRESS */
+.progress-wrap{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:16px}
+.progress-steps{display:flex;gap:6px;margin-bottom:8px}
+.step{flex:1;height:4px;border-radius:99px;background:var(--border);transition:background .3s}
+.step.done{background:var(--green-mid)}
+.step.active{background:var(--gold)}
+.progress-label{font-size:11px;color:var(--ink3)}
+
+/* CARD */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card-eyebrow{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:8px}
+.card-question{font-size:15px;color:var(--ink);line-height:1.6;font-weight:500;margin-bottom:6px}
+.card-sub{font-size:13px;color:var(--ink3);line-height:1.5;margin-bottom:14px;font-style:italic}
+.card-note{font-size:12px;color:var(--ink3);background:var(--surface);border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 6px 6px 0;margin-bottom:14px;line-height:1.5}
+
+/* TEXTAREA */
+.answer-wrap{position:relative}
+textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;color:var(--ink);background:var(--surface);resize:vertical;min-height:120px;font-family:inherit;transition:border-color .2s}
+textarea:focus{outline:none;border-color:var(--green-mid);background:var(--white)}
+.word-count{font-size:11px;color:var(--ink4);text-align:right;margin-top:4px}
+.word-count.ok{color:var(--green-text)}
+.word-count.over{color:var(--red-text)}
+
+/* FORCED CHOICE */
+.fc-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.fc-btn{border:1.5px solid var(--border);border-radius:8px;padding:14px 16px;font-size:13px;color:var(--ink2);line-height:1.5;cursor:pointer;background:var(--surface);text-align:left;transition:all .2s;font-family:inherit}
+.fc-btn:hover{border-color:var(--green-mid);background:var(--green-light)}
+.fc-btn.selected{border-color:var(--green-mid);background:var(--green-light);color:var(--green-text);font-weight:500}
+.fc-progress{font-size:12px;color:var(--ink3);margin-bottom:12px}
+
+/* RANKING */
+.rank-options{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.rank-item{display:flex;align-items:center;gap:10px;border:1.5px solid var(--border);border-radius:8px;padding:12px 14px;background:var(--surface)}
+.rank-num{width:24px;height:24px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink3);flex-shrink:0;cursor:pointer;transition:all .2s}
+.rank-num.set{background:var(--green-mid);color:white}
+.rank-text{font-size:13px;color:var(--ink2);line-height:1.4;flex:1}
+.rank-select{font-size:12px;border:1px solid var(--border);border-radius:6px;padding:4px 8px;background:var(--white);color:var(--ink);cursor:pointer}
+
+/* RATIONALE */
+.rationale-wrap{margin-top:12px}
+.rationale-lbl{font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:6px}
+textarea.rationale{min-height:72px;font-size:13px}
+
+/* SECTION HEADER */
+.section-hdr{background:var(--green);border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;color:var(--cream)}
+.section-hdr .sec-code{font-size:10px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;margin-bottom:4px}
+.section-hdr .sec-title{font-size:16px;font-weight:500}
+.section-hdr .sec-desc{font-size:12px;color:#9ab8a8;margin-top:4px;line-height:1.5}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .2s;font-family:inherit}
+.btn-primary{background:var(--green);color:var(--cream)}
+.btn-primary:hover{background:#0a2318}
+.btn-primary:disabled{background:var(--border);color:var(--ink3);cursor:not-allowed}
+.btn-gold{background:var(--gold);color:var(--green)}
+.btn-gold:hover{background:#b8943e}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--ink2)}
+.btn-row{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+
+/* INTAKE SCREEN */
+.intake-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
+.intake-title{font-size:20px;font-weight:500;color:var(--ink);margin-bottom:6px}
+.intake-sub{font-size:14px;color:var(--ink3);line-height:1.6;margin-bottom:24px}
+.form-group{margin-bottom:18px}
+.form-label{font-size:12px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px}
+.form-input{width:100%;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--ink);background:var(--surface);font-family:inherit;transition:border-color .2s}
+.form-input:focus{outline:none;border-color:var(--green-mid);background:var(--white)}
+select.form-input{cursor:pointer}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.intake-rules{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:20px 0}
+.rule-title{font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px}
+.rule-item{font-size:12px;color:var(--ink3);line-height:1.6;display:flex;gap:8px;margin-bottom:4px}
+.rule-item::before{content:"—";color:var(--gold);flex-shrink:0}
+
+/* CONFIRMATION SCREEN */
+.confirm-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:center;box-shadow:var(--shadow)}
+.confirm-icon{width:56px;height:56px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px}
+.confirm-title{font-size:20px;font-weight:500;color:var(--ink);margin-bottom:8px}
+.confirm-sub{font-size:14px;color:var(--ink3);line-height:1.6;margin-bottom:24px}
+.result-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0;text-align:left}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.result-lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:6px}
+.result-val{font-size:14px;font-weight:500;color:var(--ink)}
+.result-desc{font-size:12px;color:var(--ink3);margin-top:3px;line-height:1.4}
+.archetype-pill{display:inline-block;background:var(--green);color:var(--gold);font-size:12px;font-weight:500;padding:4px 14px;border-radius:99px;margin-right:6px;margin-bottom:4px}
+.confirm-note{font-size:12px;color:var(--ink3);background:var(--surface);border-radius:8px;padding:12px 16px;line-height:1.6}
+
+/* ERRORS */
+.err-msg{font-size:12px;color:var(--red-text);margin-top:4px;display:none}
+.err-msg.show{display:block}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--ink3);font-size:14px}
+.saving-banner{background:var(--amber);border:1px solid var(--amber-text);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--amber-text);text-align:center;margin-bottom:14px;display:none}
+
+/* FOLLOW UP */
+.followup-box{background:var(--gold-light);border:1px solid var(--gold);border-radius:8px;padding:14px 16px;margin-top:14px}
+.followup-lbl{font-size:11px;font-weight:600;color:var(--amber-text);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.followup-q{font-size:13px;color:var(--ink);font-weight:500;margin-bottom:10px;line-height:1.5}
+
+@media(max-width:580px){
+  .form-grid{grid-template-columns:1fr}
+  .fc-pair{grid-template-columns:1fr}
+  .result-cards{grid-template-columns:1fr}
+  .timer-val{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="app-header" id="appHeader" style="display:none">
+    <div>
+      <div class="brand">Springboard Talent</div>
+      <div class="title">Candidate Assessment</div>
+    </div>
+    <div class="timer-block">
+      <div class="timer-lbl">Time remaining</div>
+      <div class="timer-val" id="timerDisplay">60:00</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progressWrap" style="display:none">
+    <div class="progress-steps" id="progressSteps"></div>
+    <div class="progress-label" id="progressLabel">Section 1 of 5</div>
+  </div>
+
+  <!-- SAVING BANNER -->
+  <div class="saving-banner" id="savingBanner">Saving your responses to Drive…</div>
+
+  <!-- MAIN CONTENT -->
+  <div id="mainContent"></div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIGURATION
+// ─────────────────────────────────────────────
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+
+// ─────────────────────────────────────────────
+// QUESTION DATA
+// ─────────────────────────────────────────────
+
+const UNIVERSAL_QUESTIONS = {
+  A1: {
+    code: 'A1',
+    section: 'A — Moment Retrieval',
+    eyebrow: 'Execution under pressure · Universal',
+    q: 'Think of a specific project or deliverable in the last two years that hit a serious obstacle — a sudden change, a resource loss, a stakeholder reversal, or a missed dependency. Don\'t describe it generically. Name the domain it was in (hiring, product, budget, client, technical, process) and what specifically broke down. What did you do in the first 48 hours?',
+    note: 'Be specific. Name the domain. Describe your own action — not what the team did generally.',
+    wc: [80, 120],
+    followup: 'You described that situation — who specifically did you speak to first, and what did you ask them to do differently?',
+    fwc: [30, 50]
+  },
+  A3: {
+    code: 'A3',
+    section: 'A — Moment Retrieval',
+    eyebrow: 'Navigating ambiguity or change · Universal',
+    q: 'Describe a situation in the last three years where the direction you were working toward changed significantly — a strategy shift, a leadership change, a market event, or a sudden reprioritisation. You didn\'t choose it. How did you respond, and what did you actually do differently as a result?',
+    note: 'We\'re interested in what you genuinely did — not what would have been the ideal response.',
+    wc: [80, 120],
+    followup: 'What did you privately think about the change at the time — and has that view shifted since?',
+    fwc: [30, 50]
+  }
+};
+
+const A2_MID_SENIOR_CXO = {
+  code: 'A2',
+  section: 'A — Moment Retrieval',
+  eyebrow: 'Working through others · Mid / Senior / CXO',
+  q: 'Describe a situation in the last three years where you needed to get something significant done through people who did not report to you — peers, other functions, senior stakeholders, or external partners. What was the outcome you needed, and what did you actually do to get alignment? Be specific about who resisted and why.',
+  note: 'We\'re interested in how you specifically influenced — not just that you "had a conversation".',
+  wc: [80, 120],
+  followup: 'What did you offer or concede to get that person on board — and was it worth it?',
+  fwc: [30, 50]
+};
+
+const A2_EARLY = {
+  code: 'A2',
+  section: 'A — Moment Retrieval',
+  eyebrow: 'Working with your team · Early',
+  q: 'Think of a time in the last two years when you had to coordinate closely with someone in a different team or function to get something done. What was the task, and what made the coordination difficult? What specifically did you do to keep things moving?',
+  note: 'Be specific about what you personally did — not what the team did collectively.',
+  wc: [80, 120],
+  followup: 'What would have happened if you hadn\'t done that — and did anyone notice that you had?',
+  fwc: [30, 50]
+};
+
+const A4_QUESTIONS = {
+  OPS: {
+    Early: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Operations · Early',q:'Describe a time you noticed that a process you were working within was producing the wrong output — not just inefficiently, but incorrectly. What did you notice, what did you do about it, and what happened?',note:'Be specific about what "wrong" meant and what action you personally took.',wc:[80,120],followup:'How did you decide it was your place to raise it rather than just work within the process?',fwc:[30,50]},
+    Mid: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Operations · Mid',q:'Describe a process or workflow that was clearly broken when you inherited or joined it. What specifically was broken, what did you do to fix it, and how did you know it was fixed?',note:'We\'re looking for genuine redesign — not just workarounds.',wc:[80,120],followup:'What did you have to stop doing — or get others to stop doing — to make the fix stick?',fwc:[30,50]},
+    Senior: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Operations · Senior',q:'Describe a time you had to redesign how work moved across teams — not just fix a process within one team, but change the operating model between functions. What triggered it, what did you change, and what did you have to sacrifice to make it work?',note:'Focus on the cross-functional change, not just the internal process improvement.',wc:[80,120],followup:'Who lost something in that redesign — and how did you handle it?',fwc:[30,50]},
+    CXO: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Operations · CXO',q:'Describe a time you established or significantly changed the planning and decision-making rhythm of an organisation. What was wrong with how decisions were being made, what did you change, and what resistance did you encounter from people who benefited from the old rhythm?',note:'We\'re interested in enterprise-level rhythm change — not functional process improvement.',wc:[80,120],followup:'Six months in, what didn\'t work as you expected — and what did you do about it?',fwc:[30,50]}
+  },
+  DEV: {
+    Early: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Technology · Early',q:'Describe a time you identified a technical problem — a bug, a design flaw, an accumulating shortcut — that nobody had asked you to look into. What did you find, how did you raise it, and what happened?',note:'We\'re interested in how you decided to raise it, not just what the technical issue was.',wc:[80,120],followup:'How did you decide it was worth raising rather than working around?',fwc:[30,50]},
+    Mid: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Technology · Mid',q:'Describe a technical decision you made where you had to choose between building something yourself, buying a solution, or integrating an existing tool. Walk through your reasoning — what did you consider, and what did you decide against and why?',note:'We want to understand your decision logic, not just the outcome.',wc:[80,120],followup:'Looking back, was it the right call — and what would you do differently?',fwc:[30,50]},
+    Senior: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Technology · Senior',q:'Describe a time you had to make an architectural decision knowing it would constrain the product in ways your team would feel later. What were the trade-offs, how did you communicate them, and how did you feel about the decision in hindsight?',note:'Be specific about the trade-off — what you protected and what you gave up.',wc:[80,120],followup:'Did the constraint you predicted actually materialise — and who had to deal with it?',fwc:[30,50]},
+    CXO: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Technology · CXO',q:'Describe a time you had to sunset or significantly change a technology platform that people inside the organisation were attached to. What was your case for change, how did you bring leadership along, and what did it cost you politically?',note:'We\'re interested in the human and political dimension, not just the technical rationale.',wc:[80,120],followup:'What would you do differently in how you managed the human side of it?',fwc:[30,50]}
+  },
+  HR: {
+    Early: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · People & Culture · Early',q:'Think of a time you noticed something was off with a team member or in a team dynamic — before it became a formal issue. What did you notice, what did you do about it, and what happened?',note:'We\'re interested in early signal recognition — what prompted you to act.',wc:[80,120],followup:'Who else had noticed — and why hadn\'t they acted?',fwc:[30,50]},
+    Mid: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · People & Culture · Mid',q:'Describe a conflict between two people or two teams that landed in your lap to resolve. Not a process dispute — a genuine interpersonal or political tension. What did you do, and how did you know it was actually resolved rather than just suppressed?',note:'Be specific about what you said and what each person had to give up.',wc:[80,120],followup:'What did each person have to give up for it to be resolved — and did they?',fwc:[30,50]},
+    Senior: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · People & Culture · Senior',q:'Describe a time you advised a senior business leader on a people decision they had already made up their mind about — and you believed they were wrong. What was the situation, what did you say, and what happened?',note:'We\'re looking for a genuine example of peer-level challenge — not facilitation.',wc:[80,120],followup:'If you could replay that conversation, what would you say differently?',fwc:[30,50]},
+    CXO: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · People & Culture · CXO',q:'Describe a time you identified a cultural behaviour — something people were doing or not doing — that was directly undermining business performance. How did you make the case to the board or CEO, what intervention did you design, and how did you measure whether it worked?',note:'We\'re interested in culture as a performance variable — not as a values exercise.',wc:[80,120],followup:'What did you learn about the limits of your ability to change culture from the top?',fwc:[30,50]}
+  },
+  FIN: {
+    Early: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Finance & Strategy · Early',q:'Describe a time you found an error, assumption, or data quality problem in a financial model or analysis — either your own or someone else\'s. What did you do with it?',note:'Be specific about the nature of the error and what you decided to do.',wc:[80,120],followup:'How significant was the error, and how did you decide whether to raise it or fix it quietly?',fwc:[30,50]},
+    Mid: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Finance & Strategy · Mid',q:'Describe a piece of analysis you built that was meant to answer a specific business question — not just report numbers. What was the question, what did you find, and what decision did it drive?',note:'We\'re interested in decision-orientation — analysis that produced a specific outcome.',wc:[80,120],followup:'Did the decision-maker actually use it — and if not, why not?',fwc:[30,50]},
+    Senior: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Finance & Strategy · Senior',q:'Describe a time you recommended stopping investment in something — a project, a market, a capability — based on your financial or strategic analysis. How did you make the case, who pushed back, and what happened?',note:'We\'re looking for genuine conviction and the willingness to recommend stopping, not just starting.',wc:[80,120],followup:'In hindsight, were you right — and does anyone know that?',fwc:[30,50]},
+    CXO: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Finance & Strategy · CXO',q:'Describe a time you had to deliver a difficult financial reality to a board or investors — not spin it, but actually surface a problem and own it. What did you say, how did they respond, and what did it cost you?',note:'We\'re interested in board-level candour — not just reporting.',wc:[80,120],followup:'What did you learn about how much truth a board can absorb at once?',fwc:[30,50]}
+  },
+  MKT: {
+    Early: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Sales & Marketing · Early',q:'Describe a time a customer or prospect told you something that contradicted what your company believed about them — a different pain point, a different objection, a different reason for buying or not buying. What did you do with that information?',note:'We\'re interested in what changed as a result of what you heard.',wc:[80,120],followup:'Did it change anything — and if not, why not?',fwc:[30,50]},
+    Mid: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Sales & Marketing · Mid',q:'Describe a time you inherited or identified a revenue system — a territory, a channel, a funnel — that wasn\'t working. What specifically was broken, what did you change, and how did you know it was working after the change?',note:'Be specific about the mechanism you changed — not just the outcome.',wc:[80,120],followup:'What did you have to convince someone else to stop doing — and how did you do it?',fwc:[30,50]},
+    Senior: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Sales & Marketing · Senior',q:'Describe a time you made a significant go-to-market decision — a new channel, a pricing change, a segment decision — that was controversial internally. What was the decision, how did you defend it, and what happened?',note:'We\'re interested in the logic of your decision, not just the outcome.',wc:[80,120],followup:'If it worked, who got the credit — and if it failed, who got the blame?',fwc:[30,50]},
+    CXO: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Sales & Marketing · CXO',q:'Describe a time you repositioned a brand or product in a meaningful way — not just a campaign refresh, but a genuine shift in how the market perceived what you were selling. What drove the decision, how did you execute it, and how long did it take to show up in commercial results?',note:'We\'re looking for category-level positioning change, not campaign performance.',wc:[80,120],followup:'What would have happened if you hadn\'t done it — and does your current organisation know that?',fwc:[30,50]}
+  },
+  CRE: {
+    Early: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Creative & Design · Early',q:'Describe a time you received feedback on your work that you disagreed with. What was the feedback, what did you think was wrong about it, and what did you actually do?',note:'We\'re interested in how you distinguish preference-based from problem-based feedback.',wc:[80,120],followup:'Looking back, was the feedback more right than you thought at the time?',fwc:[30,50]},
+    Mid: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Creative & Design · Mid',q:'Describe a project where you had to hold a creative vision together across multiple people, timelines, and pressures. What was the vision, what threatened it, and what did you do to protect it without being precious about it?',note:'We\'re interested in the trade-offs you made — what you protected and what you let go.',wc:[80,120],followup:'What did you compromise on — and was it the right call?',fwc:[30,50]},
+    Senior: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Creative & Design · Senior',q:'Describe a time you had to make the case for a creative or design investment to someone who thought of it as a cost, not a value driver. What was your argument, how did it land, and what happened?',note:'We\'re interested in your commercial framing — how you connected creative to business outcome.',wc:[80,120],followup:'What would you do differently in how you made the case?',fwc:[30,50]},
+    CXO: { code:'A4',section:'A — Moment Retrieval',eyebrow:'Domain · Creative & Design · CXO',q:'Describe a time the creative or design culture of an organisation you led started to erode as the business grew. What caused it, what did you do about it, and what couldn\'t you save?',note:'We\'re interested in what you learned about sustaining creative culture at scale.',wc:[80,120],followup:'What do you know now about sustaining creative culture at scale that you didn\'t know then?',fwc:[30,50]}
+  }
+};
+
+const B_QUESTIONS = {
+  EarlyMid: {
+    code:'B1',section:'B — Forced Prioritisation',
+    eyebrow:'The First Week',
+    q:'You have just joined a new organisation. In your first week you discover all four of the following. Rank them in the order you would address them — 1 = first, 4 = last.',
+    options:[
+      {id:'A',text:'A key team member is clearly disengaged and has one foot out the door'},
+      {id:'B',text:'A deliverable is due in three weeks that nobody currently owns'},
+      {id:'C',text:'Your manager has misunderstood your role and has different expectations from what you agreed'},
+      {id:'D',text:'The team has a process that is producing the wrong output but everyone has accepted it as normal'}
+    ],
+    rationale:'In one sentence — explain why you ranked your first priority first.'
+  },
+  SeniorCXO: {
+    code:'B1',section:'B — Forced Prioritisation',
+    eyebrow:'The First Month',
+    q:'You have just been appointed to lead a function. In your first month you discover all four of the following. Rank them 1–4 in order of what you address first.',
+    options:[
+      {id:'A',text:'Two of your direct reports are in a sustained conflict that is affecting team output'},
+      {id:'B',text:'The function\'s strategy has not been reviewed in 18 months and is misaligned with the current business direction'},
+      {id:'C',text:'A key external partner relationship has deteriorated and is at risk of breaking down'},
+      {id:'D',text:'Your predecessor left behind a culture of low accountability that the team has normalised'}
+    ],
+    rationale:'In one sentence — explain why you ranked your first priority first.'
+  },
+  MidSeniorCXO_B2: {
+    code:'B2',section:'B — Forced Prioritisation',
+    eyebrow:'The Impossible Quarter',
+    q:'Your function faces a 20% resource reduction mid-year. You must decide what to stop, what to protect, and what to do with less. Rank the following 1–4 in terms of what you protect most.',
+    options:[
+      {id:'A',text:'Capability building and team development programmes'},
+      {id:'B',text:'Revenue-generating or commercially critical activity'},
+      {id:'C',text:'A strategic initiative that won\'t show results for 12–18 months'},
+      {id:'D',text:'Compliance and governance work that is mandatory but not value-creating'}
+    ],
+    rationale:'In one sentence — what principle governed your decision?'
+  }
+};
+
+const FC_PAIRS = [
+  {id:'FC1',cluster:'Tactical-Strategic',q:'When solving a problem at work I am more naturally drawn to...',a:'Finding the best solution for this specific situation',b:'Finding a solution that works across similar situations in the future'},
+  {id:'FC2',cluster:'Tactical-Strategic',q:'I get more energy from...',a:'Closing something — a deal, a project, a decision',b:'Opening something — a question, a possibility, a new direction'},
+  {id:'FC3',cluster:'Tactical-Strategic',q:'When I look at a process that isn\'t working, I first want to...',a:'Fix the immediate bottleneck',b:'Understand why the process exists and whether it should'},
+  {id:'FC4',cluster:'Tactical-Strategic',q:'In a planning discussion, I am more likely to be the person who...',a:'Pushes to make a decision and move forward',b:'Raises the question no one has thought to ask yet'},
+  {id:'FC5',cluster:'Archetype',q:'I do my best work when I am...',a:'Given a clear mandate and the resources to execute it',b:'Given a problem and the freedom to define how to solve it'},
+  {id:'FC6',cluster:'Archetype',q:'The work I look back on most proudly is usually work where I...',a:'Built something that didn\'t exist before',b:'Made something that existed work significantly better'},
+  {id:'FC7',cluster:'Archetype',q:'When I join a new organisation, I am more likely to...',a:'Understand the existing culture before trying to change anything',b:'Start identifying what needs to change from day one'},
+  {id:'FC8',cluster:'Archetype',q:'My natural instinct when something is broken is to...',a:'Fix it and move on',b:'Figure out why it broke so it doesn\'t happen again'},
+  {id:'FC9',cluster:'Derailer',q:'Under significant deadline pressure, I am more likely to...',a:'Cut scope to protect quality',b:'Push the team harder to protect scope'},
+  {id:'FC10',cluster:'Derailer',q:'When I receive critical feedback I disagree with, my first instinct is to...',a:'Explain my reasoning and defend my position',b:'Ask questions to understand the feedback before responding'},
+  {id:'FC11',cluster:'Derailer',q:'When a project I am responsible for fails, I am more likely to first think about...',a:'What I could have done differently',b:'What circumstances made it difficult to succeed'},
+  {id:'FC12',cluster:'Derailer',q:'In a room where a decision I think is wrong is about to be made, I am more likely to...',a:'Say clearly that I think it\'s wrong, even if I\'m the only one',b:'Raise my concern once and then support the group\'s decision'}
+];
+
+const D_QUESTIONS = [
+  {
+    code:'D1',section:'D — Reflective Dilemma',
+    eyebrow:'Professional failure',
+    q:'Tell us about a professional failure or misstep — something that still bothers you a little when you think about it. In 100 words: what happened, what you did about it, and what you would do differently.',
+    note:'Don\'t choose something from more than three years ago, and don\'t choose something where the lesson is tidy.',
+    wc:[80,100]
+  },
+  {
+    code:'D2',section:'D — Reflective Dilemma',
+    eyebrow:'How others read you',
+    q:'What do people tend to get wrong about you when they first work with you — and why do you think that happens?',
+    note:'In 100 words. Be honest rather than strategic.',
+    wc:[60,100]
+  }
+];
+
+// ─────────────────────────────────────────────
+// ARCHETYPE + ORIENTATION LOOKUP (for confirmation screen)
+// ─────────────────────────────────────────────
+function deriveArchetype(fc){
+  const f6=fc['FC6'], f7=fc['FC7'], f5=fc['FC5'], f8=fc['FC8'];
+  if(f6==='A'&&f7==='B') return {primary:'Builder',desc:'Creates what doesn\'t exist. Thrives in 0→1 environments.'};
+  if(f7==='B'&&f8==='A') return {primary:'Fixer',desc:'Restores what is broken. Thrives in turnarounds.'};
+  if(f6==='B'&&f7==='A'&&f5==='B') return {primary:'Scaler',desc:'Makes proven things bigger. Thrives in growth environments.'};
+  if(f6==='B'&&f7==='A'&&f5==='A') return {primary:'Steward',desc:'Protects what has value. Thrives in optimisation roles.'};
+  return {primary:'Scaler',desc:'Makes proven things bigger. Strong in structured growth environments.'};
+}
+
+function deriveOrientation(fc){
+  let aCount=0;
+  ['FC1','FC2','FC3','FC4'].forEach(k=>{ if(fc[k]==='A') aCount++; });
+  if(aCount>=3) return {pos:'Executor–Optimiser',desc:'Grounded in delivery. Energised by closure and measurable progress.'};
+  if(aCount===2) return {pos:'Optimiser–Architect',desc:'Systems thinker. Energised by making things work better at scale.'};
+  return {pos:'Architect–Visionary',desc:'Strategic orientation. Energised by questions and long-range direction.'};
+}
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let state = {
+  screen: 'intake',    // intake | section | confirm
+  candidate: {},       // name, domain, level, email
+  currentSection: 0,   // 0-based index
+  sections: [],        // array of section definitions
+  answers: {},         // keyed by question code
+  fcAnswers: {},       // FC1..FC12
+  timer: null,
+  secondsLeft: 3600,
+  started: false
+};
+
+// ─────────────────────────────────────────────
+// BUILD SECTION LIST based on domain × level
+// ─────────────────────────────────────────────
+function buildSections(domain, level){
+  const sections = [];
+  const isEarly = level === 'Early';
+  const isMidPlus = ['Mid','Senior','CXO'].includes(level);
+  const isSeniorCXO = ['Senior','CXO'].includes(level);
+
+  // Section 1 — A Universal (A1 + A3 + A2 variant)
+  const secA = {type:'text', title:'Work Experience', desc:'Tell us about specific situations from your work history.', questions:[]};
+  secA.questions.push(UNIVERSAL_QUESTIONS.A1);
+  if(isEarly) secA.questions.push(A2_EARLY);
+  else secA.questions.push(A2_MID_SENIOR_CXO);
+  secA.questions.push(UNIVERSAL_QUESTIONS.A3);
+  sections.push(secA);
+
+  // Section 2 — A4 Domain specific
+  const a4q = A4_QUESTIONS[domain][level];
+  sections.push({type:'text', title:'Your Functional Domain', desc:'A question specific to your domain and level.', questions:[a4q]});
+
+  // Section 3 — B Forced prioritisation
+  const secB = {type:'ranking', title:'Prioritisation', desc:'Rank your responses — no right or wrong answers.', questions:[]};
+  if(isEarly) secB.questions.push(B_QUESTIONS.EarlyMid);
+  else if(!isSeniorCXO) secB.questions.push(B_QUESTIONS.EarlyMid);
+  else secB.questions.push(B_QUESTIONS.SeniorCXO);
+  if(isMidPlus) secB.questions.push(B_QUESTIONS.MidSeniorCXO_B2);
+  sections.push(secB);
+
+  // Section 4 — FC Forced Choice
+  sections.push({type:'fc', title:'Quick Preferences', desc:'Select A or B — no neutral option. Move through quickly.', questions:FC_PAIRS});
+
+  // Section 5 — D Reflective
+  sections.push({type:'text', title:'Reflection', desc:'Two short reflective questions. Be honest rather than strategic.', questions:D_QUESTIONS});
+
+  return sections;
+}
+
+// ─────────────────────────────────────────────
+// TIMER
+// ─────────────────────────────────────────────
+function startTimer(){
+  state.timer = setInterval(()=>{
+    state.secondsLeft--;
+    updateTimerDisplay();
+    if(state.secondsLeft<=0){ clearInterval(state.timer); handleAutoSubmit(); }
+  },1000);
+}
+
+function updateTimerDisplay(){
+  const m = Math.floor(state.secondsLeft/60);
+  const s = state.secondsLeft%60;
+  const el = document.getElementById('timerDisplay');
+  if(!el) return;
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.className = 'timer-val';
+  if(state.secondsLeft<600) el.classList.add('warn');
+  if(state.secondsLeft<300) el.classList.add('danger');
+}
+
+function handleAutoSubmit(){
+  collectCurrentSection();
+  submitAssessment();
+}
+
+// ─────────────────────────────────────────────
+// WORD COUNT
+// ─────────────────────────────────────────────
+function countWords(str){ return str.trim().split(/\s+/).filter(w=>w.length>0).length; }
+
+function attachWordCount(ta, min, max, wcEl){
+  ta.addEventListener('input',()=>{
+    const wc = countWords(ta.value);
+    wcEl.textContent = `${wc} words (${min}–${max} target)`;
+    wcEl.className = 'word-count';
+    if(wc>=min&&wc<=max) wcEl.classList.add('ok');
+    if(wc>max) wcEl.classList.add('over');
+  });
+}
+
+// ─────────────────────────────────────────────
+// RENDER — INTAKE SCREEN
+// ─────────────────────────────────────────────
+function renderIntake(){
+  const el = document.getElementById('mainContent');
+  el.innerHTML = `
+  <div class="intake-card">
+    <div class="card-eyebrow" style="margin-bottom:8px">Springboard Talent</div>
+    <div class="intake-title">Candidate Assessment</div>
+    <div class="intake-sub">This assessment takes 35–40 minutes. Please complete it in one sitting — you cannot save and return. Your responses are used to generate a Signal Brief shared with hiring organisations.</div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" for="f-name">Full name</label>
+        <input class="form-input" id="f-name" type="text" placeholder="Your full name">
+        <div class="err-msg" id="err-name">Please enter your name</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="f-email">Email</label>
+        <input class="form-input" id="f-email" type="email" placeholder="your@email.com">
+        <div class="err-msg" id="err-email">Please enter a valid email</div>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" for="f-domain">Functional domain</label>
+        <select class="form-input" id="f-domain">
+          <option value="">Select your domain</option>
+          <option value="OPS">Operations & General Management</option>
+          <option value="DEV">Technology & Product Development</option>
+          <option value="HR">People & Culture (HR)</option>
+          <option value="FIN">Finance & Strategy</option>
+          <option value="MKT">Sales, Marketing & Growth</option>
+          <option value="CRE">Creative & Design</option>
+        </select>
+        <div class="err-msg" id="err-domain">Please select your domain</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="f-level">Seniority level</label>
+        <select class="form-input" id="f-level">
+          <option value="">Select your level</option>
+          <option value="Early">Early (0–4 years)</option>
+          <option value="Mid">Mid (4–10 years)</option>
+          <option value="Senior">Senior (10–18 years)</option>
+          <option value="CXO">CXO / Executive</option>
+        </select>
+        <div class="err-msg" id="err-level">Please select your level</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="f-location">City / Location</label>
+      <input class="form-input" id="f-location" type="text" placeholder="e.g. Bengaluru">
+    </div>
+
+    <div class="intake-rules">
+      <div class="rule-title">Before you begin</div>
+      <div class="rule-item">You have 60 minutes. The assessment auto-submits when time runs out.</div>
+      <div class="rule-item">Once you move past a section, you cannot go back.</div>
+      <div class="rule-item">Be specific. Vague answers produce less useful signal than precise ones.</div>
+      <div class="rule-item">Use real examples from your work history — within the last 3 years where possible.</div>
+      <div class="rule-item">There are no right or wrong answers. Honest responses serve you better than polished ones.</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="startBtn" onclick="handleStart()">Begin assessment →</button>
+    </div>
+  </div>`;
+}
+
+function handleStart(){
+  const name = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const domain = document.getElementById('f-domain').value;
+  const level = document.getElementById('f-level').value;
+  const location = document.getElementById('f-location').value.trim();
+
+  let valid = true;
+  if(!name){ document.getElementById('err-name').classList.add('show'); valid=false; }
+  else document.getElementById('err-name').classList.remove('show');
+  if(!email||!email.includes('@')){ document.getElementById('err-email').classList.add('show'); valid=false; }
+  else document.getElementById('err-email').classList.remove('show');
+  if(!domain){ document.getElementById('err-domain').classList.add('show'); valid=false; }
+  else document.getElementById('err-domain').classList.remove('show');
+  if(!level){ document.getElementById('err-level').classList.add('show'); valid=false; }
+  else document.getElementById('err-level').classList.remove('show');
+
+  if(!valid) return;
+
+  state.candidate = {name, email, domain, level, location};
+  state.sections = buildSections(domain, level);
+  state.currentSection = 0;
+
+  document.getElementById('appHeader').style.display='flex';
+  document.getElementById('progressWrap').style.display='block';
+  renderProgressBar();
+  startTimer();
+  renderSection(0);
+}
+
+// ─────────────────────────────────────────────
+// RENDER — PROGRESS BAR
+// ─────────────────────────────────────────────
+function renderProgressBar(){
+  const steps = document.getElementById('progressSteps');
+  steps.innerHTML = state.sections.map((_,i)=>`<div class="step ${i<state.currentSection?'done':i===state.currentSection?'active':''}" id="step-${i}"></div>`).join('');
+  document.getElementById('progressLabel').textContent = `Section ${state.currentSection+1} of ${state.sections.length} — ${state.sections[state.currentSection].title}`;
+}
+
+function updateProgress(){
+  state.sections.forEach((_,i)=>{
+    const el = document.getElementById('step-'+i);
+    if(!el) return;
+    el.className = 'step '+(i<state.currentSection?'done':i===state.currentSection?'active':'');
+  });
+  document.getElementById('progressLabel').textContent = `Section ${state.currentSection+1} of ${state.sections.length} — ${state.sections[state.currentSection].title}`;
+}
+
+// ─────────────────────────────────────────────
+// RENDER — TEXT SECTION
+// ─────────────────────────────────────────────
+function renderSection(idx){
+  const sec = state.sections[idx];
+  const el = document.getElementById('mainContent');
+  let html = `
+  <div class="section-hdr">
+    <div class="sec-code">Section ${idx+1} of ${state.sections.length}</div>
+    <div class="sec-title">${sec.title}</div>
+    <div class="sec-desc">${sec.desc}</div>
+  </div>`;
+
+  if(sec.type==='text'){
+    sec.questions.forEach((q,qi)=>{
+      html += `
+      <div class="card">
+        <div class="card-eyebrow">${q.eyebrow}</div>
+        <div class="card-question">${q.q}</div>
+        ${q.note?`<div class="card-note">${q.note}</div>`:''}
+        <div class="answer-wrap">
+          <textarea id="ans-${q.code}-${qi}" placeholder="Write your response here…" rows="6"></textarea>
+          <div class="word-count" id="wc-${q.code}-${qi}">0 words (${q.wc[0]}–${q.wc[1]} target)</div>
+        </div>
+        ${q.followup?`
+        <div class="followup-box">
+          <div class="followup-lbl">Follow-up question</div>
+          <div class="followup-q">${q.followup}</div>
+          <textarea id="fu-${q.code}-${qi}" placeholder="Your response…" rows="3"></textarea>
+          <div class="word-count" id="fuwc-${q.code}-${qi}">0 words (${q.fwc[0]}–${q.fwc[1]} target)</div>
+        </div>`:''}
+      </div>`;
+    });
+    html += `<div class="btn-row"><button class="btn btn-primary" onclick="handleNextSection()">Continue →</button></div>`;
+  }
+
+  if(sec.type==='ranking'){
+    sec.questions.forEach((q,qi)=>{
+      html += `
+      <div class="card">
+        <div class="card-eyebrow">${q.eyebrow}</div>
+        <div class="card-question">${q.q}</div>
+        <div class="rank-options" id="rank-${qi}">`;
+      q.options.forEach(opt=>{
+        html += `
+          <div class="rank-item" id="ritem-${qi}-${opt.id}">
+            <div class="rank-num" id="rnum-${qi}-${opt.id}">–</div>
+            <div class="rank-text">${opt.id}. ${opt.text}</div>
+            <select class="rank-select" id="rsel-${qi}-${opt.id}" onchange="handleRankChange(${qi},'${opt.id}',this.value)">
+              <option value="">Rank</option>
+              <option value="1">1st</option>
+              <option value="2">2nd</option>
+              <option value="3">3rd</option>
+              <option value="4">4th</option>
+            </select>
+          </div>`;
+      });
+      html += `</div>
+        <div class="rationale-wrap">
+          <div class="rationale-lbl">${q.rationale}</div>
+          <textarea class="rationale" id="rat-${qi}" placeholder="One sentence…" rows="2"></textarea>
+        </div>
+      </div>`;
+    });
+    html += `<div class="btn-row"><button class="btn btn-primary" onclick="handleNextSection()">Continue →</button></div>`;
+  }
+
+  if(sec.type==='fc'){
+    const total = FC_PAIRS.length;
+    html += `<div class="card"><div class="fc-progress" id="fcProgress">0 of ${total} answered</div>`;
+    FC_PAIRS.forEach((fc,i)=>{
+      html += `
+      <div style="margin-bottom:18px; padding-bottom:18px; border-bottom:1px solid var(--border)">
+        <div class="card-eyebrow" style="margin-bottom:6px">Question ${i+1} of ${total}</div>
+        <div class="card-question" style="margin-bottom:10px">${fc.q}</div>
+        <div class="fc-pair">
+          <button class="fc-btn" id="fc-${fc.id}-A" onclick="handleFC('${fc.id}','A')">${fc.a}</button>
+          <button class="fc-btn" id="fc-${fc.id}-B" onclick="handleFC('${fc.id}','B')">${fc.b}</button>
+        </div>
+      </div>`;
+    });
+    html += `</div><div class="btn-row"><button class="btn btn-primary" id="fcNextBtn" onclick="handleNextSection()" disabled>Continue →</button></div>`;
+  }
+
+  el.innerHTML = html;
+  window.scrollTo(0,0);
+
+  // Attach word counters after render
+  if(sec.type==='text'){
+    sec.questions.forEach((q,qi)=>{
+      const ta = document.getElementById(`ans-${q.code}-${qi}`);
+      const wc = document.getElementById(`wc-${q.code}-${qi}`);
+      if(ta&&wc) attachWordCount(ta,q.wc[0],q.wc[1],wc);
+      if(q.followup){
+        const fu = document.getElementById(`fu-${q.code}-${qi}`);
+        const fwc = document.getElementById(`fuwc-${q.code}-${qi}`);
+        if(fu&&fwc) attachWordCount(fu,q.fwc[0],q.fwc[1],fwc);
+      }
+    });
+  }
+}
+
+// ─────────────────────────────────────────────
+// FORCED CHOICE HANDLER
+// ─────────────────────────────────────────────
+function handleFC(id, choice){
+  state.fcAnswers[id] = choice;
+  ['A','B'].forEach(c=>{
+    const btn = document.getElementById(`fc-${id}-${c}`);
+    if(btn) btn.className = 'fc-btn'+(c===choice?' selected':'');
+  });
+  const answered = Object.keys(state.fcAnswers).length;
+  const total = FC_PAIRS.length;
+  const prog = document.getElementById('fcProgress');
+  if(prog) prog.textContent = `${answered} of ${total} answered`;
+  const nextBtn = document.getElementById('fcNextBtn');
+  if(nextBtn) nextBtn.disabled = answered < total;
+}
+
+// ─────────────────────────────────────────────
+// RANK HANDLER
+// ─────────────────────────────────────────────
+function handleRankChange(qi, optId, val){
+  const num = document.getElementById(`rnum-${qi}-${optId}`);
+  if(num){ num.textContent = val||'–'; num.className='rank-num'+(val?' set':''); }
+}
+
+// ─────────────────────────────────────────────
+// COLLECT SECTION ANSWERS
+// ─────────────────────────────────────────────
+function collectCurrentSection(){
+  const sec = state.sections[state.currentSection];
+  if(sec.type==='text'){
+    sec.questions.forEach((q,qi)=>{
+      const ta = document.getElementById(`ans-${q.code}-${qi}`);
+      const fu = document.getElementById(`fu-${q.code}-${qi}`);
+      const key = `${q.code}-${qi}`;
+      state.answers[key] = {
+        code: q.code,
+        eyebrow: q.eyebrow,
+        question: q.q,
+        answer: ta?ta.value:'',
+        followup: q.followup||null,
+        followupAnswer: fu?fu.value:null
+      };
+    });
+  }
+  if(sec.type==='ranking'){
+    sec.questions.forEach((q,qi)=>{
+      const rat = document.getElementById(`rat-${qi}`);
+      const ranking = {};
+      q.options.forEach(opt=>{
+        const sel = document.getElementById(`rsel-${qi}-${opt.id}`);
+        ranking[opt.id] = sel?sel.value:'';
+      });
+      state.answers[`${q.code}-${qi}`] = {
+        code: q.code,
+        eyebrow: q.eyebrow,
+        question: q.q,
+        ranking,
+        rationale: rat?rat.value:''
+      };
+    });
+  }
+  if(sec.type==='fc'){
+    state.answers['FC'] = { ...state.fcAnswers };
+  }
+}
+
+// ─────────────────────────────────────────────
+// NEXT SECTION
+// ─────────────────────────────────────────────
+function handleNextSection(){
+  collectCurrentSection();
+  state.currentSection++;
+  if(state.currentSection >= state.sections.length){
+    submitAssessment();
+    return;
+  }
+  updateProgress();
+  renderSection(state.currentSection);
+}
+
+// ─────────────────────────────────────────────
+// SUBMIT
+// ─────────────────────────────────────────────
+function submitAssessment(){
+  clearInterval(state.timer);
+  document.getElementById('savingBanner').style.display='block';
+
+  const payload = {
+    timestamp: new Date().toISOString(),
+    candidate: state.candidate,
+    answers: state.answers,
+    fcAnswers: state.fcAnswers,
+    timeSpent: 3600 - state.secondsLeft
+  };
+
+  // Save to Drive via Apps Script
+  if(APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE'){
+    fetch(APPS_SCRIPT_URL, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    }).catch(()=>{});
+  }
+
+  // Derive archetype + orientation for confirmation screen
+  const archetype = deriveArchetype(state.fcAnswers);
+  const orientation = deriveOrientation(state.fcAnswers);
+
+  setTimeout(()=>{
+    document.getElementById('savingBanner').style.display='none';
+    renderConfirmation(archetype, orientation);
+  }, 2000);
+}
+
+// ─────────────────────────────────────────────
+// CONFIRMATION SCREEN
+// ─────────────────────────────────────────────
+function renderConfirmation(archetype, orientation){
+  document.getElementById('appHeader').style.display='none';
+  document.getElementById('progressWrap').style.display='none';
+  const el = document.getElementById('mainContent');
+  el.innerHTML = `
+  <div class="confirm-card">
+    <div class="confirm-icon">✓</div>
+    <div class="confirm-title">Assessment complete</div>
+    <div class="confirm-sub">Thank you, ${state.candidate.name}. Your responses have been saved. The Springboard Talent team will review your Signal Brief and be in touch.</div>
+
+    <div class="result-cards">
+      <div class="result-card">
+        <div class="result-lbl">Your Role Archetype</div>
+        <div class="result-val"><span class="archetype-pill">${archetype.primary}</span></div>
+        <div class="result-desc">${archetype.desc}</div>
+      </div>
+      <div class="result-card">
+        <div class="result-lbl">Your Orientation</div>
+        <div class="result-val">${orientation.pos}</div>
+        <div class="result-desc">${orientation.desc}</div>
+      </div>
+    </div>
+
+    <div class="confirm-note">
+      Your full Signal Brief — including competency evidence, derailer profile, and fit map — is prepared for hiring managers by the Springboard Talent team. It is designed to represent you accurately and in your best light.
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+renderIntake();
+</script>
+</body>
+</html>
