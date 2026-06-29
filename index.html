@@ -169,7 +169,7 @@ select.form-input{cursor:pointer}
 // ─────────────────────────────────────────────
 // CONFIGURATION
 // ─────────────────────────────────────────────
-const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxh0JCV1fH2XLEA4MAPJr7CKrNOF0rrAmoKQj8PnZbLK1edjIi5qClfpyP9WbsQOifz3Q/exec';
 
 // ─────────────────────────────────────────────
 // QUESTION DATA
@@ -763,7 +763,7 @@ function submitAssessment(){
   };
 
   // Save to Drive via Apps Script
-  if(APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE'){
+  if(APPS_SCRIPT_URL){
     fetch(APPS_SCRIPT_URL, {
       method:'POST',
       mode:'no-cors',
